@@ -1,0 +1,6 @@
+modules = {
+   ["accessor"] = "src/accessor.lua",
+   ["accessor.*"] = "src"
+}
+runreport = true
+deletestats = false  -- file still needed to push to coveralls

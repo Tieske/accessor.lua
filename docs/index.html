@@ -1,0 +1,383 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>accessor</title>
+    <link rel="stylesheet" href="ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>accessor.lua</h1>
+
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><strong>accessor.lua</strong></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="topics/README.md.html">README</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>accessor.lua</code></h1>
+<p>Module to access arbitrary depth table keys.</p>
+<p> Example:</p>
+
+<pre>
+<span class="keyword">local</span> t = {
+  some = {
+    arbitrary = {
+      key = <span class="string">"hello world"</span>,
+    }
+  }
+}
+<span class="keyword">local</span> key = <span class="string">"some.arbitrary.key"</span>
+<span class="keyword">local</span> accessor = Accessor(t)
+<span class="keyword">local</span> value = accessor:get(<span class="string">"some.arbitrary.key"</span>)
+<span class="global">assert</span>(value == <span class="string">"hello world"</span>)
+</pre>
+
+<p> For each key a function will be generated. The function will be cached so the
+ 2nd lookup will be faster.</p>
+
+<p> <strong>Warning</strong>:
+ make sure to protect yourself from unlimited cache growth! Check <a href="index.html#Accessor.lua_cache">lua_cache</a>.</p>
+
+<p> Design use case: looking up user provided keys in json http bodies. The keys
+ are the same for each request, the bodies different.</p>
+    <h3>Info:</h3>
+    <ul>
+        <li><strong>Copyright</strong>: (c) 2020-2020 Thijs Schreijer</li>
+        <li><strong>License</strong>: see <a href="https://github.com/Tieske/accessor.lua/blob/master/LICENSE">LICENSE file</a></li>
+    </ul>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Accessor.lua_cache">Accessor.lua_cache ()</a></td>
+	<td class="summary">Returns a new table based cache.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Accessor.new">Accessor.new (options)</a></td>
+	<td class="summary">Constructor, creates a new accessor object.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Accessor:create_index">Accessor:create_index (source_table)</a></td>
+	<td class="summary">Adds an <code>__index</code> meta-method for automatic lookups.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Accessor:create_proxy">Accessor:create_proxy (source_table)</a></td>
+	<td class="summary">Creates a proxy table for automatic lookups.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Accessor:get">Accessor:get (element, source_table)</a></td>
+	<td class="summary">Gets a value from the table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Accessor:get_source">Accessor:get_source ()</a></td>
+	<td class="summary">Returns the source table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Accessor:validate_key">Accessor:validate_key (element)</a></td>
+	<td class="summary">Validate a user provided key.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Accessor.lua_cache"></a>
+    <strong>Accessor.lua_cache ()</strong>
+    </dt>
+    <dd>
+
+<p>Returns a new table based cache.
+ Minimal cache implementation interface compatible with resty-lru caches.
+ This cache is table based and will allow unlimited growth. If used with
+ OpenResty then use the compatible OpenResty LRU cache when calling <a href="index.html#Accessor.new">new</a>.</p>
+
+<p> A cache should implement the following methods:</p>
+
+<pre><code> ok = cache:set(key, value)
+ value = cache(key)
+</code></pre>
+
+
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new cache object
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Accessor.new"></a>
+    <strong>Accessor.new (options)</strong>
+    </dt>
+    <dd>
+
+<p>Constructor, creates a new accessor object.
+ The options table supports the following fields:</p>
+
+<ul>
+    <li><code>source</code> (optional, defaults to an empty table)
+    a table in which the keys will be looked up by default by the
+    newly created accessor object</li>
+    <li><code>cache</code> (optional, defaults to a new <a href="index.html#Accessor.lua_cache">lua_cache</a> instance)
+    a cache object to store the generated lookup functions, see
+    <a href="index.html#Accessor.lua_cache">lua_cache</a> for the required interface</li>
+</ul>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">options</span>
+         (optional) options table
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        accessor object
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Accessor:create_index"></a>
+    <strong>Accessor:create_index (source_table)</strong>
+    </dt>
+    <dd>
+    Adds an <code>__index</code> meta-method for automatic lookups.
+ Returns the source table. The table will have its metatable replaced by a new
+ one with only an <code>__index</code> method. So if a lookup fails, it will
+ retry with an 'accessor' lookup.</p>
+
+<p> This modifies the original table, but is more performant than a proxy table
+ (see <a href="index.html#Accessor:create_proxy">create_proxy</a> as an alternative).</p>
+
+<p> NOTE: where a regular <a href="index.html#Accessor:get">get</a> call would return a <code>nil+error</code>, this table
+ will only return <code>nil</code>. This is because the <code>__index</code> metamethod only has a
+ single return value, and hence will drop the error string.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">source_table</span>
+         (optional table, defaults to the <code>accessor</code> default table)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the source table, with a new meta-table (existing one will be replaced)
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> t = { hello = { world = <span class="string">"tieske"</span> } }
+<span class="keyword">local</span> p = Accessor({ source = t }):create_proxy()
+<span class="global">assert</span>(t == p)  <span class="comment">-- they are the same tables
+</span>
+<span class="global">print</span>(<span class="string">"regular: "</span>, p.hello.world)       <span class="comment">--&gt; "regular: tieske"
+</span><span class="global">print</span>(<span class="string">"accessor: "</span>, p[<span class="string">"hello.world"</span>]    <span class="comment">--&gt; "accessor: tieske"</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Accessor:create_proxy"></a>
+    <strong>Accessor:create_proxy (source_table)</strong>
+    </dt>
+    <dd>
+    Creates a proxy table for automatic lookups.
+ A proxy table is a new (empty) table with an <code>__index</code> meta-method that will
+ first do a regular lookup in the source table, and if that fails, it will
+ retry with an 'accessor' lookup.</p>
+
+<p> Because this creates a new proxy table, it will not alter the original
+ metatable or methods (see also <a href="index.html#Accessor:create_index">create_index</a> as an alternative).</p>
+
+<p> NOTE: where a regular <a href="index.html#Accessor:get">get</a> call would return a <code>nil+error</code>, this proxy
+ will only return <code>nil</code>. This is because the <code>__index</code> metamethod only has a
+ single return value, and hence will drop the error string.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">source_table</span>
+         (optional table, defaults to the <code>accessor</code> default table)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new proxy table
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> t = { hello = { world = <span class="string">"tieske"</span> } }
+<span class="keyword">local</span> p = Accessor({ source = t }):create_proxy()
+<span class="global">assert</span>(t ~= p)  <span class="comment">-- they are different tables
+</span>
+<span class="global">print</span>(<span class="string">"regular: "</span>, p.hello.world)       <span class="comment">--&gt; "regular: tieske"
+</span><span class="global">print</span>(<span class="string">"accessor: "</span>, p[<span class="string">"hello.world"</span>]    <span class="comment">--&gt; "accessor: tieske"</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Accessor:get"></a>
+    <strong>Accessor:get (element, source_table)</strong>
+    </dt>
+    <dd>
+    Gets a value from the table.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">element</span>
+         (string) the key to lookup (if not a string, then the return value will be <code>nil</code>)
+        </li>
+        <li><span class="parameter">source_table</span>
+         (optional table, defaults to the <code>accessor</code> default table)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the value or <code>nil+error</code>
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> t = { hello = { world = <span class="string">"tieske"</span> } }
+<span class="keyword">local</span> accessor = Accessor({ source = t })
+<span class="global">print</span>(accessor:get(<span class="string">"hello.world"</span>))          <span class="comment">--&gt; "tieske"
+</span><span class="global">print</span>(t.does_not_exist.world)               <span class="comment">--&gt; error!
+</span><span class="global">print</span>(accessor:get(<span class="string">"does_not_exist.world"</span>)) <span class="comment">--&gt; "nil, a lookup error"
+</span>
+<span class="keyword">local</span> t2 = { hello = { world = <span class="string">"someone"</span> } }
+<span class="global">print</span>(accessor:get(<span class="string">"hello.world"</span>, t2))      <span class="comment">--&gt; "someone"
+</span>
+<span class="comment">-- NOTE: when doing the lookup in t2, the same 'accessor' is used, which means
+</span><span class="comment">-- it uses the same functions cache, so the 2nd lookup uses the function generated
+</span><span class="comment">-- by the first lookup, despite it being used on a different table.
+</span><span class="comment">-- So there is no need to create accessor objects for each table.</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Accessor:get_source"></a>
+    <strong>Accessor:get_source ()</strong>
+    </dt>
+    <dd>
+    Returns the source table.
+ This is the table provided as <code>options.source</code> to <a href="index.html#Accessor.new">new</a>.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        source table
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Accessor:validate_key"></a>
+    <strong>Accessor:validate_key (element)</strong>
+    </dt>
+    <dd>
+    Validate a user provided key.
+ Checks whether the key generates a proper function.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">element</span>
+         (string) the key to validate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <code>true</code> or <code>nil+error</code>
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="global">assert</span>(accessor:(<span class="string">"this[2].is.valid['as a key'].right"</span>))  <span class="comment">-- ok
+</span><span class="global">assert</span>(accessor:(<span class="string">"this is not"</span>))                         <span class="comment">-- fails</span></pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2020-07-14 08:33:01 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

@@ -1,0 +1,11 @@
+project='accessor.lua'
+title='accessor'
+description='Module access arbitrary keys in tables'
+format='markdown'
+file='./src/'
+dir='docs'
+readme='README.md'
+sort=true
+sort_modules=true
+all=false
+style='./docs/'
