@@ -17,7 +17,15 @@ Both the [source code](https://github.com/Tieske/accessor.lua) as well as the
 History
 =======
 
-Version 0.1, 13-Jul-2020
+### Release instructions
+
+- update history and version information
+- create new rockspec
+- render the documentation
+- commit and tag
+- upload rock to LuaRocks
+
+Version 1.0.0, 14-Jul-2020
 
  - Initial release
 
